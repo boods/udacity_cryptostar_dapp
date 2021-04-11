@@ -9,9 +9,8 @@ contract StarNotary is ERC721 {
 
     // Task 1 - Add a name and symbol properties
     // The ECI721 base contract already has a name and symbol
-    // To complete task 1, I've exposed these as params through my own constructor 
-    constructor (string memory name_, string memory symbol_) 
-    ERC721( name_, symbol_ ) {
+    // I'm just exposing the parameters via the constructor
+    constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {
     }
 
     // Star data
@@ -56,7 +55,11 @@ contract StarNotary is ERC721 {
         require(msg.value > starCost, "You need to have enough Ether");
 
         // Execute the transfer of the token
-        transferFrom(ownerAddress, msg.sender, _tokenId); 
+        // Note: to fix the tests, I've changed this call to "_transfer", 
+        // This is only safe, because the owner has put the star up for sale
+        // An alternative would be to implement an "approval" step by the owner 
+        // for the sale to proceed, before calling this function
+        _transfer(ownerAddress, msg.sender, _tokenId); 
 
         // Pay the original owner
         address payable ownerAddressPayable = _make_payable(ownerAddress); 
