@@ -9,7 +9,8 @@ contract StarNotary is ERC721 {
 
     // Task 1 - Add a name and symbol properties
     // The ECI721 base contract already has a name and symbol
-    // I'm just exposing the parameters via the constructor
+    // I have exposed the parameters via the constructor, and set them in the 
+    // deploy script `migrations\2_deploy_contracts.js`
     constructor(string memory _name, string memory _symbol) ERC721(_name, _symbol) {
     }
 
@@ -37,7 +38,7 @@ contract StarNotary is ERC721 {
     }
 
     function putStarUpForSale(uint256 _tokenId, uint256 _price) public {
-        require(ownerOf(_tokenId) == msg.sender, "You can't sale the Star you don't owned");
+        require(ownerOf(_tokenId) == msg.sender, "You can't sell a Star you don't own");
         starsForSale[_tokenId] = _price;
     }
 
@@ -97,5 +98,4 @@ contract StarNotary is ERC721 {
         require( ownerOf(_tokenId) == msg.sender, "The sender must own the star");
         transferFrom(msg.sender, _to1, _tokenId);
     }
-
 }

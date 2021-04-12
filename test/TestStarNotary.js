@@ -89,9 +89,34 @@ it('lets 2 users exchange stars', async() => {
     let star2Owner = accounts[2];
     await instance.createStar('Star11', starId1, {from: star1Owner});
     await instance.createStar('Star12', starId2, {from: star2Owner});
+
+    // First, test that star1Owner can trigger the exchange
     await instance.exchangeStars(starId1, starId2, {from: star1Owner});
     assert.equal( await instance.ownerOf(starId1), star2Owner);
     assert.equal( await instance.ownerOf(starId2), star1Owner); 
+
+    // Second, test that star2Owner can trigger the exchange, now 
+    // that owners have been swapped (confirming this can be done by 
+    // multiple owners)
+    await instance.exchangeStars(starId1, starId2, {from: star2Owner});
+    assert.equal( await instance.ownerOf(starId1), star1Owner);
+    assert.equal( await instance.ownerOf(starId2), star2Owner); 
+
+    // Thirdly, test that star2Owner can trigger the exchange, being the owner
+    // of the second star in the exchangeStars call 
+    // This is to confirm that the exchange can happen, so long as the owner
+    // owns one of the stars
+    await instance.exchangeStars(starId1, starId2, {from: star2Owner});
+    assert.equal( await instance.ownerOf(starId1), star2Owner);
+    assert.equal( await instance.ownerOf(starId2), star1Owner); 
+
+    // Lastly, test that star1Owner can exchange a star with him/her self
+    // which is odd, but no reason to block it
+    let starId3 = 13;
+    await instance.createStar('Star13', starId3, {from: star1Owner});
+    await instance.exchangeStars(starId2, starId3, {from: star1Owner});
+    assert.equal( await instance.ownerOf(starId2), star1Owner);
+    assert.equal( await instance.ownerOf(starId3), star1Owner); 
 });
 
 it('lets a user transfer a star', async() => {
@@ -104,6 +129,25 @@ it('lets a user transfer a star', async() => {
     assert.equal(await instance.ownerOf(starId),newOwner );
 });
 
+it('does not let non owners exchange stars', async() => {
+    let instance = await StarNotary.deployed();
+    let starOwner = accounts[1];
+    let starId1 = 55;
+    let starId2 = 56;
+    await instance.createStar('Star55', starId1, {from: starOwner});
+    await instance.createStar('Star56', starId2, {from: starOwner});
+
+    // First, test that star1Owner can trigger the exchange
+    try
+    {
+        await instance.exchangeStars(starId1, starId2, {from: accounts[2]});
+        assert.false("An exception should be thrown when attempting to call exchangeStars as a non-owner");
+    }
+    catch(e)
+    {
+    }
+});
+
 it('lookUptokenIdToStarInfo test', async() => {
     // 1. create a Star with different tokenId
     // 2. Call your method lookUptokenIdToStarInfo
@@ -113,4 +157,17 @@ it('lookUptokenIdToStarInfo test', async() => {
     let owner = accounts[1];
     await instance.createStar('Star100', starId, {from: owner});
     assert.equal(await instance.lookUptokenIdToStarInfo(starId), "Star100" );
+});
+
+it('lookUptokenIdToStarInfo throws an exception for unknown starIds', async() => {
+    let instance = await StarNotary.deployed();
+    let owner = accounts[1];
+    try
+    {
+        await instance.lookUptokenIdToStarInfo(928423);
+        assert.false("An exception should be thrown for unknown starId values");
+    }
+    catch (e)
+    {
+    }
 });

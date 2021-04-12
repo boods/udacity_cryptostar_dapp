@@ -35,19 +35,56 @@ const App = {
     const { createStar } = this.meta.methods;
     const name = document.getElementById("starName").value;
     const id = document.getElementById("starId").value;
-    await createStar(name, id).send({from: this.account});
-    App.setStatus("New Star Owner is " + this.account + ".");
+
+    try
+    {
+      let starInfo = await this.getStarInfo(id);
+      App.setStatus("Error creating star: Star ID " + id + " already exists");
+      return;          
+    } 
+    catch (e)
+    {
+      // This is the happy case (probably - we allow the function proceed regardless)
+      try
+      {
+        console.log("Create star");
+        await createStar(name, id).send({from: this.account});
+        console.log("Create star success");
+        App.setStatus("New Star Owner is " + this.account + ".");  
+      }
+      catch (e)
+      {
+        console.log("Error caught");
+        App.setStatus("Error creating star: ", e.message);
+      }
+    }
   },
 
   // Implement Task 4 Modify the front end of the DAPP
-  lookUp: async function (){
+  getStarInfo: async function (id){
     const { lookUptokenIdToStarInfo } = this.meta.methods;
-    const id = document.getElementById("lookid").value;
-    console.log("Looking up", id);
-    let starInfo = await lookUptokenIdToStarInfo(id).call({from: this.account});
-    App.setStatus("Star Info: " + JSON.stringify(starInfo) + ".");        
-  }
+    return await lookUptokenIdToStarInfo(id).call({from: this.account});
+  },
 
+  lookUp: async function (){
+    try
+    {
+      const id = document.getElementById("lookid").value;
+      let starInfo = await this.getStarInfo(id);
+      App.setStatus("Star Info: " + JSON.stringify(starInfo));          
+    } 
+    catch (e)
+    {
+      if (e.message.search("revert Unknown star") !== -1)
+      {
+        App.setStatus("Unknown star");          
+      } 
+      else
+      {
+        App.setStatus("Error locating Star Info: " + e.message);          
+      }
+    }
+  }
 };
 
 window.App = App;

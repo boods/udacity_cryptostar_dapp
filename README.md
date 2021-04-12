@@ -1,20 +1,42 @@
 # Udacity CrytoStar DAPP
 
-Testing: 
+## Build Requirements
+To build locally requires the following: 
+- Truffle v5.3.0 
+- OpenZeppelin v4.0.0
 
-To launch the truffle local dev environment: 
-```
-truffle develop
+## Code
+- The StarNotary smart contract is located in `contracts\StarNotary`.
+- By default, the contract will be deployed with: 
+  - Name: `StellaSaccus` (Star Wallet in latin)
+  - Symbol: `STS`
+  - These properties can be changed by adjusting the migration script `migrations\2_deploy_contracts.js`
 
+## Rinkeby Deployment
+Deployed contract details on the Rinkeby network: 
+- Contract address: 0xdCc8706Eb863AA411144f9F9378d99235ca6d017
+- Deployment Transaction: 0x8b9d8310d5319b1b724198801fcc6b6310f5ffebfd499577576f3a66c8d3e112
+- Deployment Account: 0xcabc744D0716AC4E65c16C78c45939708d7078d8
 
-compile
-migrate --reset
-test
-```
+## Building the SmartContract
+- Adjust the 'networks - develop' section of truffle-config.js to suite your dev environment (the default is set to hostname 0.0.0.0 on port 8545, to support builkding on wsl2 running on Windows 10)
+- Launch the local ehtereum test network by running `truffle develop` in the base directory
+- To build, execute `compile`
+- To deploy, execute `migrate --reset`
+- To test, execute `test` 
 
+## Building the web application 
+- Change to the `app` directory
+- Run `npm install`
+- Run `npm run dev`
+- Browse to `http://localhost:8080`, log in to Metamask, and connect to the local ethereum block chain
 
-To launch the webpack local webserver:
-```
-npm run dev
-```
+## Deploying to Rinkeby (or other test network) using Infura 
+- Install the hardware waller provider: `npm install @truffle/hdwallet-provider`
+- Configure the network in truffle-config.js, including an infura project id and mnemonic (help in .secrets and not included in the repo)
+- Launch the console, connected to the test network: `npx truffle console --network rinkeby`
+- Check that you have an account with funding: 
+  - List accounts: `await web3.eth.getAccounts()`
+  - Check balance: `await web3.eth.getBalance('0x000MYACCOUNTID000')`
+- Deploy: `migrate`
 
